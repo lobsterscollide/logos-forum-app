@@ -1,39 +1,57 @@
 #include "forum_app_impl.h"
 #include "logos_sdk.h"
 
-// TODO: subscribe to forum_comms.postReceived during initialisation so incoming
-// posts are forwarded upward to the UI backend. The exact subscription API
-// depends on the logos-delivery SDK. Expected shape:
+// TODO: subscribe to forum_comms events during initialisation so incoming
+// posts are forwarded upward to the UI backend. Expected shape:
 //
-//   modules().forum_comms.onPostReceived([this](const std::string &topic,
-//                                               const std::string &content,
-//                                               const std::string &sender_id) {
-//       postReceived(topic, content, sender_id);
+//   modules().forum_comms.onPostReceived([this](
+//       const std::string &forum, const std::string &topic,
+//       const std::string &content, const std::string &author_id) {
+//       postReceived(forum, topic, content, author_id);
 //   });
-//
-// Similarly, subscribe to forum_comms.identityReady to surface the local
-// node identity to the UI:
 //
 //   modules().forum_comms.onIdentityReady([this](const std::string &identity) {
-//       (void)identity; // notify UI via statusChanged or a dedicated event
+//       setStatus("identity ready: " + identity);
 //   });
 
-void ForumAppImpl::publishPost(const std::string &topic, const std::string &content)
+ForumAppImpl::ForumAppImpl()
 {
-    const std::string identity = modules().forum_comms.getIdentity();
-    modules().forum_comms.publishPost(topic, content, identity);
+    // V1: auto-subscribe to the default forum on startup.
+    subscribeToForum("Logos Forum");
 }
 
-void ForumAppImpl::subscribeTopic(const std::string &topic)
+void ForumAppImpl::publishPost(const std::string &forum,
+                               const std::string &topic,
+                               const std::string &content)
 {
-    modules().forum_comms.subscribeTopic(topic);
-    setStatus("subscribed: " + topic);
+    // author_id is the sender's public key; empty string until logos-delivery
+    // assigns a local identity via forum_comms.getIdentity().
+    const std::string author_id = modules().forum_comms.getIdentity();
+    modules().forum_comms.publishPost(forum, topic, content, author_id);
 }
 
-void ForumAppImpl::unsubscribeTopic(const std::string &topic)
+void ForumAppImpl::subscribeToForum(const std::string &forum)
 {
-    modules().forum_comms.unsubscribeTopic(topic);
-    setStatus("unsubscribed: " + topic);
+    modules().forum_comms.subscribeToForum(forum);
+    setStatus("subscribed to forum: " + forum);
+}
+
+void ForumAppImpl::unsubscribeFromForum(const std::string &forum)
+{
+    modules().forum_comms.unsubscribeFromForum(forum);
+    setStatus("unsubscribed from forum: " + forum);
+}
+
+void ForumAppImpl::subscribeTopic(const std::string &forum, const std::string &topic)
+{
+    modules().forum_comms.subscribeTopic(forum, topic);
+    setStatus("subscribed to topic: " + forum + " › " + topic);
+}
+
+void ForumAppImpl::unsubscribeTopic(const std::string &forum, const std::string &topic)
+{
+    modules().forum_comms.unsubscribeTopic(forum, topic);
+    setStatus("unsubscribed from topic: " + forum + " › " + topic);
 }
 
 std::string ForumAppImpl::getStatus()
