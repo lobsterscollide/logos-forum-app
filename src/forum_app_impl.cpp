@@ -27,30 +27,30 @@ void ForumAppImpl::publishPost(const std::string &forum,
     // author_id is the sender's public key; empty string until logos-delivery
     // assigns a local identity via forum_comms.getIdentity().
     const std::string author_id = modules().forum_comms.getIdentity();
-    modules().forum_comms.publishPost(forum, topic, content, author_id);
+    (void)modules().forum_comms.publishPost(forum, topic, content, author_id);
 }
 
 void ForumAppImpl::subscribeToForum(const std::string &forum)
 {
-    modules().forum_comms.subscribeToForum(forum);
+    (void)modules().forum_comms.subscribeToForum(forum);
     setStatus("subscribed to forum: " + forum);
 }
 
 void ForumAppImpl::unsubscribeFromForum(const std::string &forum)
 {
-    modules().forum_comms.unsubscribeFromForum(forum);
+    (void)modules().forum_comms.unsubscribeFromForum(forum);
     setStatus("unsubscribed from forum: " + forum);
 }
 
 void ForumAppImpl::subscribeTopic(const std::string &forum, const std::string &topic)
 {
-    modules().forum_comms.subscribeTopic(forum, topic);
+    (void)modules().forum_comms.subscribeTopic(forum, topic);
     setStatus("subscribed to topic: " + forum + " › " + topic);
 }
 
 void ForumAppImpl::unsubscribeTopic(const std::string &forum, const std::string &topic)
 {
-    modules().forum_comms.unsubscribeTopic(forum, topic);
+    (void)modules().forum_comms.unsubscribeTopic(forum, topic);
     setStatus("unsubscribed from topic: " + forum + " › " + topic);
 }
 
